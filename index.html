@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScholarKit | Free, Fast, Client-Side Research Utilities</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
   <meta name="google-site-verification" content="hZQTiWoZImPr0xvsA-zuB7-rqpqrLY5i5Jocc0lxkrg" />
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
   <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
     <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
       <a href="index.html" class="flex items-center space-x-3">
@@ -18,16 +19,20 @@
       <span class="text-xs bg-emerald-950/50 text-emerald-400 px-3 py-1.5 rounded-full font-medium border border-emerald-800/50">100% Client-Side</span>
     </div>
   </header>
+
   <section class="max-w-5xl mx-auto px-4 pt-16 pb-10 text-center">
-    <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
-      Free, private tools for <span class="text-indigo-400">academic research & literature reviews</span>.
+    <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4 min-h-[5rem] sm:min-h-[6rem] flex flex-wrap items-center justify-center gap-x-2">
+      <span>Free, private tools for</span>
+      <span id="rotating-text" class="text-indigo-400 inline-block transition-all duration-300 transform opacity-100 translate-y-0">literature reviews</span>
     </h1>
     <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
       Manipulate, merge, and clean academic reference files in seconds. Every tool runs 100% locally inside your browser.
     </p>
   </section>
+
   <main class="max-w-5xl mx-auto px-4 pb-16 flex-grow w-full">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
       <a href="ris-merger.html" class="group bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-indigo-500 transition flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
@@ -38,6 +43,7 @@
           <p class="text-sm text-slate-400">Combine citation exports from PubMed, Scopus, or Embase with automatic duplicate removal.</p>
         </div>
       </a>
+
       <a href="bibtex-to-csv.html" class="group bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-indigo-500 transition flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
@@ -48,6 +54,7 @@
           <p class="text-sm text-slate-400">Convert BibTeX bibliographies into tabular spreadsheets for screening in Excel.</p>
         </div>
       </a>
+
       <a href="bibtex-to-ris.html" class="group bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-indigo-500 transition flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
@@ -58,6 +65,7 @@
           <p class="text-sm text-slate-400">Convert LaTeX BibTeX files directly to EndNote, Zotero, and Mendeley format.</p>
         </div>
       </a>
+
       <a href="doi-to-bibtex.html" class="group bg-slate-800/50 rounded-xl p-6 border border-slate-700 hover:border-indigo-500 transition flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-4">
@@ -68,13 +76,16 @@
           <p class="text-sm text-slate-400">Paste DOIs to pull formatted BibTeX records directly from CrossRef.</p>
         </div>
       </a>
+
     </div>
+
     <div class="mt-10 mb-6 flex justify-center">
       <a href="https://www.buymeacoffee.com/meero" target="_blank" rel="noopener noreferrer" class="inline-block transition transform hover:scale-105">
         <img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me a Coffee" style="height: 48px !important; width: 174px !important;" class="rounded-lg shadow-sm">
       </a>
     </div>
   </main>
+
   <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500">
     <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
       <span>© 2026 ScholarKit. All processing occurs locally in your client browser.</span>
@@ -84,5 +95,35 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    const rotatingWords = [
+      "literature reviews.",
+      "research papers.",
+      "systematic reviews.",
+      "thesis writing.",
+      "citation screening."
+    ];
+    let currentIndex = 0;
+    const rotatingElem = document.getElementById("rotating-text");
+
+    setInterval(() => {
+      rotatingElem.classList.remove("opacity-100", "translate-y-0");
+      rotatingElem.classList.add("opacity-0", "-translate-y-2");
+
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % rotatingWords.length;
+        rotatingElem.textContent = rotatingWords[currentIndex];
+        rotatingElem.classList.remove("-translate-y-2");
+        rotatingElem.classList.add("translate-y-2");
+
+        setTimeout(() => {
+          rotatingElem.classList.remove("opacity-0", "translate-y-2");
+          rotatingElem.classList.add("opacity-100", "translate-y-0");
+        }, 50);
+      }, 300);
+    }, 2800);
+  </script>
+
 </body>
 </html>
