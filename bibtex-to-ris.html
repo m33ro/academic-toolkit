@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BibTeX to RIS Converter | ScholarKit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans antialiased">
+
+  <header class="border-b bg-white sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <a href="index.html" class="text-xl font-bold text-indigo-600 tracking-tight">ScholarKit</a>
+        <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-medium border border-indigo-100">Zero Server Uploads</span>
+      </div>
+      <nav class="flex items-center space-x-6 text-sm font-medium text-slate-600">
+        <a href="index.html" class="hover:text-slate-900 transition">All Tools</a>
+        <a href="ris-merger.html" class="hover:text-slate-900 transition">RIS Merger</a>
+        <a href="bibtex-to-csv.html" class="hover:text-slate-900 transition">BibTeX to CSV</a>
+        <a href="bibtex-to-ris.html" class="text-indigo-600 font-semibold">BibTeX to RIS</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-10 flex-grow w-full">
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold text-slate-900 mb-2">BibTeX to RIS Converter</h1>
+      <p class="text-slate-600">Convert LaTeX BibTeX bibliographies into standard RIS format for EndNote, Zotero, and Mendeley.</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
+      <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition bg-slate-50 hover:bg-indigo-50/30">
+        <svg class="w-10 h-10 text-slate-400 mb-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        </svg>
+        <span class="font-medium text-slate-700 pointer-events-none">Choose .bib file or drop it here</span>
+        <span class="text-xs text-slate-500 mt-1 pointer-events-none">Supports .bib or plain text reference files</span>
+        <input id="file-input" type="file" accept=".bib,.txt,text/plain" class="hidden" />
+      </div>
+
+      <div id="file-status" class="mt-4 hidden">
+        <div class="flex items-center justify-between text-sm text-slate-600 bg-slate-100 p-3 rounded">
+          <span id="file-name">No file selected</span>
+          <button id="clear-btn" class="text-red-500 hover:underline text-xs">Clear</button>
+        </div>
+      </div>
+
+      <button id="convert-btn" disabled class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-lg transition shadow-sm cursor-pointer disabled:cursor-not-allowed">
+        Convert & Download RIS File
+      </button>
+
+      <div id="result-box" class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm hidden">
+        <p class="font-semibold">Conversion Successful!</p>
+        <p id="result-stats" class="mt-1 text-emerald-700"></p>
+      </div>
+    </div>
+
+    <article class="prose prose-slate max-w-none border-t pt-8">
+      <h2 class="text-xl font-bold text-slate-900 mb-3">How BibTeX to RIS Conversion Works</h2>
+      <p class="text-slate-600 text-sm leading-relaxed mb-4">
+        While BibTeX is standard across LaTeX workflows, reference managers like EndNote, Covidence, and Rayyan require Research Information Systems (RIS) formatting. This utility maps standard BibTeX entry types directly to RIS tags without sending your data to any external server.
+      </p>
+    </article>
+  </main>
+
+  <footer class="border-t bg-white py-6 text-center text-xs text-slate-400">
+    © 2026 ScholarKit. All processing occurs locally in client memory.
+  </footer>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileStatus = document.getElementById('file-status');
+    const fileName = document.getElementById('file-name');
+    const clearBtn = document.getElementById('clear-btn');
+    const convertBtn = document.getElementById('convert-btn');
+    const resultBox = document.getElementById('result-box');
+    const resultStats = document.getElementById('result-stats');
+
+    let loadedFile = null;
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-50/50');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/50');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+      loadedFile = file;
+      fileStatus.classList.remove('hidden');
+      fileName.textContent = file.name;
+      convertBtn.disabled = false;
+      resultBox.classList.add('hidden');
+    }
+
+    clearBtn.addEventListener('click', () => {
+      loadedFile = null;
+      fileInput.value = '';
+      fileStatus.classList.add('hidden');
+      convertBtn.disabled = true;
+      resultBox.classList.add('hidden');
+    });
+
+    convertBtn.addEventListener('click', async () => {
+      convertBtn.disabled = true;
+      convertBtn.textContent = 'Converting...';
+
+      const text = await loadedFile.text();
+      const risRecords = convertBibTeXToRIS(text);
+
+      const blob = new Blob([risRecords.join('\r\n\r\n') + '\r\n'], { type: 'application/x-research-info-systems;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `converted_citations_${Date.now()}.ris`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      resultStats.textContent = `Converted ${risRecords.length} records to RIS format.`;
+      resultBox.classList.remove('hidden');
+      convertBtn.disabled = false;
+      convertBtn.textContent = 'Convert & Download RIS File';
+    });
+
+    function convertBibTeXToRIS(bibText) {
+      const entries = bibText.split(/@(?=[a-zA-Z]+\s*\{)/);
+      const risList = [];
+
+      for (let entry of entries) {
+        if (!entry.trim()) continue;
+
+        const typeMatch = entry.match(/^([a-zA-Z]+)\s*\{/);
+        const bibType = typeMatch ? typeMatch[1].toLowerCase() : 'article';
+        
+        let risType = 'JOUR';
+        if (bibType === 'book') risType = 'BOOK';
+        else if (bibType === 'inproceedings' || bibType === 'conference') risType = 'CONF';
+        else if (bibType === 'phdthesis' || bibType === 'mastersthesis') risType = 'THES';
+
+        let lines = [`TY  - ${risType}`];
+
+        const title = extractField(entry, 'title');
+        if (title) lines.push(`TI  - ${title}`);
+
+        const authors = extractField(entry, 'author');
+        if (authors) {
+          authors.split(/\s+and\s+/i).forEach(author => {
+            lines.push(`AU  - ${author.trim()}`);
+          });
+        }
+
+        const journal = extractField(entry, 'journal') || extractField(entry, 'booktitle');
+        if (journal) lines.push(`JO  - ${journal}`);
+
+        const year = extractField(entry, 'year');
+        if (year) lines.push(`PY  - ${year}`);
+
+        const volume = extractField(entry, 'volume');
+        if (volume) lines.push(`VL  - ${volume}`);
+
+        const pages = extractField(entry, 'pages');
+        if (pages) lines.push(`SP  - ${pages}`);
+
+        const doi = extractField(entry, 'doi');
+        if (doi) lines.push(`DO  - ${doi}`);
+
+        const abstract = extractField(entry, 'abstract');
+        if (abstract) lines.push(`AB  - ${abstract}`);
+
+        lines.push('ER  - ');
+        risList.push(lines.join('\r\n'));
+      }
+      return risList;
+    }
+
+    function extractField(entry, fieldName) {
+      const regex = new RegExp(`${fieldName}\\s*=\\s*[{"]([^"}]+)[}"]`, 'i');
+      const match = entry.match(regex);
+      return match ? match[1].replace(/\s+/g, ' ').trim() : '';
+    }
+  </script>
+</body>
+</html>
