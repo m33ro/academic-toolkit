@@ -3,212 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RIS File Merger & Deduplicator | ScholarKit</title>
+  <title>Multi-File RIS Merger | ScholarKit</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
-
-  <!-- Header -->
-  <header class="border-b bg-white">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <span class="text-xl font-bold text-indigo-600">ScholarKit</span>
-        <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-medium">Free Research Utilities</span>
-      </div>
-     <nav class="flex items-center space-x-6 text-sm font-medium text-slate-600">
-  	<a href="index.html" class="hover:text-slate-900 transition">All Tools</a>
-  	<a href="ris-merger.html" class="text-indigo-600 font-semibold">RIS Merger</a>
-  	<a href="bibtex-to-csv.html" class="hover:text-slate-900 transition">BibTeX Converter</a>
-	</nav>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="index.html" class="flex items-center space-x-3">
+        <span class="text-xl font-bold text-indigo-400 tracking-tight">ScholarKit</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-medium border border-slate-700">Free Research Utilities</span>
+      </a>
+      <a href="index.html" class="text-sm font-medium text-slate-400 hover:text-white transition flex items-center space-x-1">
+        <span>← All Tools</span>
+      </a>
     </div>
   </header>
-
-  <!-- Main Container -->
   <main class="max-w-3xl mx-auto px-4 py-10 flex-grow w-full">
-    
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Merge & Deduplicate RIS Files</h1>
-      <p class="text-slate-600">Combine multiple citation exports from PubMed, Scopus, or Embase into one clean file. Processed 100% locally in your browser.</p>
+      <h1 class="text-3xl font-extrabold text-white mb-2">Merge & Deduplicate RIS Files</h1>
+      <p class="text-slate-400">Combine citation exports from PubMed, Scopus, or Embase into one clean file.</p>
     </div>
-
-    <!-- Tool Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8">
-      
-      <!-- Dropzone -->
-      <div id="drop-zone" class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition bg-slate-50 hover:bg-indigo-50/30">
-        <svg class="w-10 h-10 text-slate-400 mb-3 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-        </svg>
-        <span class="font-medium text-slate-700 pointer-events-none">Choose .ris files or drop them here</span>
-        <span class="text-xs text-slate-500 mt-1 pointer-events-none">Supports .ris or .txt citation files</span>
-        <input id="file-input" type="file" multiple accept=".ris,.txt,text/plain" class="hidden" />
+    <div class="bg-slate-800/50 rounded-xl border border-slate-700 p-6 mb-8">
+      <div id="drop-zone" class="border-2 border-dashed border-slate-600 hover:border-indigo-500 rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer transition bg-slate-900/50">
+        <span class="font-medium text-slate-200">Choose .ris files or drop them here</span>
+        <span class="text-xs text-slate-400 mt-1">Supports .ris or .txt citation files</span>
+        <input id="file-input" type="file" multiple accept=".ris,.txt" class="hidden" />
       </div>
-
-      <!-- Selected Files Status -->
-      <div id="file-status" class="mt-4 hidden">
-        <div class="flex items-center justify-between text-sm text-slate-600 bg-slate-100 p-3 rounded">
-          <span id="file-count">0 files selected</span>
-          <button id="clear-btn" class="text-red-500 hover:underline text-xs">Clear</button>
+      <div id="file-list-container" class="mt-4 hidden">
+        <div class="flex items-center justify-between text-sm text-slate-300 mb-2">
+          <span id="file-count" class="font-semibold">0 files selected</span>
+          <button id="clear-btn" class="text-red-400 hover:underline text-xs">Clear all</button>
         </div>
+        <ul id="file-list" class="max-h-36 overflow-y-auto divide-y divide-slate-700 text-xs text-slate-300 bg-slate-900/80 rounded p-2 border border-slate-700"></ul>
       </div>
-
-      <!-- Action Button -->
-      <button id="merge-btn" disabled class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-semibold py-3 rounded-lg transition shadow-sm cursor-pointer disabled:cursor-not-allowed">
+      <button id="process-btn" disabled class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-lg transition cursor-pointer disabled:cursor-not-allowed">
         Merge & Download Consolidated RIS
       </button>
-
-      <!-- Results Notification -->
-      <div id="result-box" class="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-sm hidden">
-        <p class="font-semibold">Success!</p>
-        <p id="result-stats" class="mt-1 text-emerald-700"></p>
+      <div id="result-box" class="mt-4 p-4 bg-emerald-950/30 border border-emerald-800 rounded-lg text-emerald-200 text-sm hidden">
+        <span class="font-semibold text-emerald-400">Success!</span>
+        <p id="result-stats" class="mt-1 text-slate-300"></p>
       </div>
-
     </div>
-
-    <!-- Instructions Content -->
-    <article class="prose prose-slate max-w-none border-t pt-8">
-      <h2 class="text-xl font-bold text-slate-900 mb-3">How to Use This Tool</h2>
-      <ol class="list-decimal pl-5 space-y-2 text-slate-600 text-sm mb-6">
-        <li>Export your citation batches from databases like PubMed, Scopus, or Embase in <code>.ris</code> format.</li>
-        <li>Click the box above to select your files, or drag and drop them directly.</li>
-        <li>Click <strong>Merge & Download</strong> to get a single, consolidated file with duplicate records removed automatically.</li>
-      </ol>
-    </article>
-
-  
     <div class="mt-10 mb-6 flex justify-center">
       <a href="https://www.buymeacoffee.com/meero" target="_blank" rel="noopener noreferrer" class="inline-block transition transform hover:scale-105">
         <img src="https://cdn.buymeacoffee.com/buttons/v2/arial-blue.png" alt="Buy Me a Coffee" style="height: 48px !important; width: 174px !important;" class="rounded-lg shadow-sm">
       </a>
     </div>
   </main>
-
-  <footer class="border-t bg-white py-6 text-center text-xs text-slate-400">
-    © 2026 ScholarKit. All processing occurs locally in the client browser.
+  <footer class="border-t border-slate-800 py-8 text-center text-xs text-slate-500">
+    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <span>© 2026 ScholarKit. All processing occurs locally in your client browser.</span>
+      <div class="space-x-4">
+        <a href="index.html" class="hover:text-slate-300 transition">Home</a>
+        <a href="privacy.html" class="hover:text-slate-300 transition">Privacy Policy</a>
+      </div>
+    </div>
   </footer>
-
-  <!-- Logic -->
   <script>
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const fileStatus = document.getElementById('file-status');
-    const fileCount = document.getElementById('file-count');
-    const clearBtn = document.getElementById('clear-btn');
-    const mergeBtn = document.getElementById('merge-btn');
-    const resultBox = document.getElementById('result-box');
-    const resultStats = document.getElementById('result-stats');
-
-    let loadedFiles = [];
-
-    // Click to upload
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', (e) => {
-      handleFiles(Array.from(e.target.files));
-    });
-
-    // Drag and drop support
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.add('border-indigo-500', 'bg-indigo-50/50');
-      }, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropZone.classList.remove('border-indigo-500', 'bg-indigo-50/50');
-      }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = Array.from(dt.files);
-      handleFiles(files);
-    });
-
-    function handleFiles(files) {
-      if (!files || files.length === 0) return;
-      loadedFiles = files;
-      fileStatus.classList.remove('hidden');
-      fileCount.textContent = `${loadedFiles.length} file(s) loaded`;
-      mergeBtn.disabled = false;
-      resultBox.classList.add('hidden');
+    const dropZone = document.getElementById("drop-zone"), fileInput = document.getElementById("file-input"), fileListContainer = document.getElementById("file-list-container"), fileList = document.getElementById("file-list"), fileCount = document.getElementById("file-count"), clearBtn = document.getElementById("clear-btn"), processBtn = document.getElementById("process-btn"), resultBox = document.getElementById("result-box"), resultStats = document.getElementById("result-stats");
+    let selectedFiles = [];
+    dropZone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => handleFiles(Array.from(e.target.files)));
+    ["dragenter", "dragover"].forEach(n => dropZone.addEventListener(n, (e) => { e.preventDefault(); dropZone.classList.add("border-indigo-500"); }, false));
+    ["dragleave", "drop"].forEach(n => dropZone.addEventListener(n, (e) => { e.preventDefault(); dropZone.classList.remove("border-indigo-500"); }, false));
+    dropZone.addEventListener("drop", (e) => handleFiles(Array.from(e.dataTransfer.files)));
+    function handleFiles(files) { selectedFiles = [...selectedFiles, ...files]; renderFileList(); }
+    function renderFileList() {
+      if (selectedFiles.length === 0) { fileListContainer.classList.add("hidden"); processBtn.disabled = true; return; }
+      fileListContainer.classList.remove("hidden"); processBtn.disabled = false;
+      fileCount.textContent = selectedFiles.length + " file(s) selected";
+      fileList.innerHTML = selectedFiles.map(f => '<li class="py-1 truncate">' + f.name + '</li>').join("");
     }
-
-    clearBtn.addEventListener('click', () => {
-      loadedFiles = [];
-      fileInput.value = '';
-      fileStatus.classList.add('hidden');
-      mergeBtn.disabled = true;
-      resultBox.classList.add('hidden');
-    });
-
-    mergeBtn.addEventListener('click', async () => {
-      mergeBtn.disabled = true;
-      mergeBtn.textContent = 'Processing files...';
-
-      let allRecords = [];
-      let seenKeys = new Set();
-      let duplicatesRemoved = 0;
-
-      for (const file of loadedFiles) {
+    clearBtn.addEventListener("click", () => { selectedFiles = []; fileInput.value = ""; renderFileList(); resultBox.classList.add("hidden"); });
+    processBtn.addEventListener("click", async () => {
+      processBtn.disabled = true; processBtn.textContent = "Processing...";
+      let allRecords = [], totalParsed = 0;
+      for (let file of selectedFiles) {
         const text = await file.text();
         const records = parseRIS(text);
-        
-        for (const record of records) {
-          const key = extractIdentifier(record);
-          if (key && seenKeys.has(key)) {
-            duplicatesRemoved++;
-          } else {
-            if (key) seenKeys.add(key);
-            allRecords.push(record.trim());
+        totalParsed += records.length;
+        allRecords.push(...records);
+      }
+      const seen = new Set(), uniqueRecords = [];
+      for (let rec of allRecords) {
+        const key = rec.doi ? "doi:" + rec.doi.toLowerCase().trim() : (rec.title ? "title:" + rec.title.toLowerCase().replace(/[^a-z0-9]/g, "") : "raw:" + rec.raw.slice(0, 100));
+        if (!seen.has(key)) { seen.add(key); uniqueRecords.push(rec); }
+      }
+      const mergedOutput = uniqueRecords.map(r => r.raw.trim()).join("\r\n\r\n") + "\r\n";
+      const blob = new Blob([mergedOutput], { type: "application/x-research-info-systems;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "scholarkit_merged_" + Date.now() + ".ris";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      resultStats.textContent = "Processed " + totalParsed + " records across " + selectedFiles.length + " files. Removed " + (totalParsed - uniqueRecords.length) + " duplicates. Output: " + uniqueRecords.length + " unique citations.";
+      resultBox.classList.remove("hidden"); processBtn.disabled = false; processBtn.textContent = "Merge & Download Consolidated RIS";
+    });
+    function parseRIS(content) {
+      const rawRecords = content.split(/ER\s{2}-\s*(?:\r?\n|$)/), records = [];
+      for (let raw of rawRecords) {
+        if (!raw.trim()) continue;
+        const lines = raw.split(/\r?\n/); let title = "", doi = "";
+        for (let line of lines) {
+          const match = line.match(/^([A-Z0-9]{2})\s{2}-\s*(.*)$/);
+          if (match) {
+            if ((match[1] === "TI" || match[1] === "T1") && !title) title = match[2].trim();
+            if (match[1] === "DO" && !doi) doi = match[2].trim();
           }
         }
+        records.push({ title: title, doi: doi, raw: raw.trim() + "\r\nER  - " });
       }
-
-      // Consolidate records
-      const mergedContent = allRecords.join('\r\n\r\n') + '\r\n';
-      
-      // Trigger download
-      const blob = new Blob([mergedContent], { type: 'application/x-research-info-systems;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `merged_citations_${Date.now()}.ris`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      // Feedback
-      resultStats.textContent = `Merged ${allRecords.length} citation records across ${loadedFiles.length} files. Removed ${duplicatesRemoved} duplicate entries.`;
-      resultBox.classList.remove('hidden');
-      mergeBtn.disabled = false;
-      mergeBtn.textContent = 'Merge & Download Consolidated RIS';
-    });
-
-    function parseRIS(rawText) {
-      const rawRecords = rawText.split(/(?:^|\r?\n)ER\s+-\s*(?:\r?\n|$)/);
-      return rawRecords
-        .map(r => r.trim())
-        .filter(r => r.length > 0)
-        .map(r => r + '\r\nER  - ');
-    }
-
-    function extractIdentifier(recordText) {
-      const doiMatch = recordText.match(/(?:^|\n)DO\s+-\s+(.+)(?:\r?\n|$)/i);
-      if (doiMatch && doiMatch[1]) {
-        return doiMatch[1].trim().toLowerCase();
-      }
-      const titleMatch = recordText.match(/(?:^|\n)(?:TI|T1)\s+-\s+(.+)(?:\r?\n|$)/i);
-      if (titleMatch && titleMatch[1]) {
-        return titleMatch[1].trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      }
-      return null;
+      return records;
     }
   </script>
 </body>
